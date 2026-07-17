@@ -709,6 +709,7 @@
   <div class="eyebrow">WIBO RETREAT 2026 · HACKATHON <b>AI</b></div>
 
   <div class="controls">
+    <button class="btn btn-ghost" id="btnMute" title="Audio on/off (M)">🔊 Audio</button>
     <button class="btn btn-ghost" id="btnFull" title="Schermo intero (F)">⛶ Fullscreen</button>
     <button class="btn btn-ghost hidden" id="btnRestart" title="Ricomincia (R)">↺ Ricomincia</button>
   </div>
@@ -1732,6 +1733,7 @@
     const btnStart = $('#btnStart');
     const btnRestart = $('#btnRestart');
     const btnFull = $('#btnFull');
+    const btnMute = $('#btnMute');
     const selects = [$('#sel-1'), $('#sel-2'), $('#sel-3'), $('#sel-4'), $('#sel-5')];
 
     function optionLabel(t) { return t.name + ' — ' + t.challenge; }
@@ -1787,6 +1789,8 @@
       const w = validateSelection();
       if (!w) return;
       winners = w;
+      initAudio();
+      ambientStart();
       buildSteps();
       idx = -1;
       setup.classList.add('hidden');
@@ -1843,6 +1847,7 @@
         '</div>';
       requestAnimationFrame(() => $('#loserCard').classList.add('play'));
       sadConfetti();
+      wompSound();
       setTimeout(() => { busy = false; showPrompt(); }, 550);
     }
 
@@ -1885,6 +1890,7 @@
 
       if (isFirst) firstPlaceConfetti();
       else standardConfetti(pos);
+      fanfareSound(pos);
 
       updatePodium(pos, t);
 
@@ -1912,6 +1918,7 @@
 
       darkVeil.style.transition = 'opacity ' + (cfg.dur / 1000) + 's ease';
       requestAnimationFrame(() => { darkVeil.style.opacity = cfg.veil; });
+      drumrollSound(cfg.dur / 1000, pos === 1);
 
       let teaser = null;
       if (cfg.teaser) {
@@ -1957,6 +1964,7 @@
 
       if (isFirst) firstPlaceConfetti();
       else standardConfetti(pos);
+      sparkleSound(isFirst);
 
       const releaseAfter = isFirst ? 850 : 600;
       setTimeout(() => { busy = false; showPrompt(); }, releaseAfter);
@@ -1969,12 +1977,182 @@
       darkVeil.style.opacity = 0;
       finale.classList.add('show');
       grandFinaleConfetti();
+      ambientStop();
+      finaleSound();
     }
 
     function updatePodium(pos, t) {
       $('#pod-name-' + pos).textContent = t.name;
       const col = document.querySelector('.podium-col[data-pos="' + pos + '"]');
       if (col) col.classList.add('show');
+    }
+
+    // ---------- Audio (Web Audio API, sintetizzato, nessun file esterno) ----------
+    let audioCtx = null, master = null, ambientNodes = null, muted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          master = audioCtx.createGain();
+          master.gain.value = muted ? 0 : 1;
+          master.connect(audioCtx.destination);
+        } catch (e) { audioCtx = null; }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function aOK() { return audioCtx && master && !muted; }
+    function T() { return audioCtx.currentTime; }
+
+    // Nota sintetizzata con inviluppo ADSR semplice
+    function tone(freq, t0, dur, opts) {
+      if (!aOK()) return;
+      opts = opts || {};
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = opts.type || 'sine';
+      o.frequency.setValueAtTime(freq, t0);
+      if (opts.glideTo) o.frequency.exponentialRampToValueAtTime(opts.glideTo, t0 + dur);
+      const peak = opts.peak != null ? opts.peak : 0.18;
+      const atk = opts.attack != null ? opts.attack : 0.012;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      let node = o;
+      if (opts.filter) {
+        const f = audioCtx.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = opts.filter;
+        o.connect(f); f.connect(g);
+      } else { o.connect(g); }
+      g.connect(master);
+      o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+    function chord(freqs, t0, dur, opts) { freqs.forEach((f) => tone(f, t0, dur, opts)); }
+
+    // Rullo di tamburi: rumore filtrato con tremolo che accelera + tensione crescente
+    function drumrollSound(durSec, big) {
+      if (!aOK()) return;
+      const t0 = T();
+      const len = Math.max(0.3, durSec);
+      const buf = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * len), audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+      const src = audioCtx.createBufferSource(); src.buffer = buf;
+      const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = big ? 220 : 180; bp.Q.value = 0.8;
+      const g = audioCtx.createGain();
+      // volume cresce verso la fine
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(big ? 0.16 : 0.10, t0 + len * 0.85);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+      // tremolo che accelera (roll)
+      const lfo = audioCtx.createOscillator(); const lfoG = audioCtx.createGain();
+      lfo.type = 'sawtooth';
+      lfo.frequency.setValueAtTime(9, t0);
+      lfo.frequency.exponentialRampToValueAtTime(big ? 34 : 24, t0 + len);
+      lfoG.gain.value = 0.5;
+      const trem = audioCtx.createGain(); trem.gain.value = 0.5;
+      lfo.connect(lfoG); lfoG.connect(trem.gain);
+      src.connect(bp); bp.connect(trem); trem.connect(g); g.connect(master);
+      src.start(t0); src.stop(t0 + len);
+      lfo.start(t0); lfo.stop(t0 + len);
+      // tono di tensione che sale
+      tone(big ? 110 : 130, t0, len, { type: 'sawtooth', peak: 0.05, glideTo: big ? 330 : 260, filter: 900 });
+    }
+
+    // Fanfara di rivelazione (piena per il 1°, breve per 2°/3°)
+    function fanfareSound(pos) {
+      if (!aOK()) return;
+      const t = T();
+      if (pos === 1) {
+        // crash + arpeggio maggiore ascendente + accordo sostenuto
+        noiseHit(t, 0.35, 0.18, 6000);
+        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+        notes.forEach((f, i) => tone(f, t + i * 0.11, 0.5, { type: 'triangle', peak: 0.2 }));
+        chord([261.63, 329.63, 392.0, 523.25], t + 0.44, 1.4, { type: 'sawtooth', peak: 0.12, filter: 2200 });
+        // brillantini
+        [1568, 2093].forEach((f, i) => tone(f, t + 0.6 + i * 0.12, 0.4, { type: 'sine', peak: 0.08 }));
+      } else {
+        noiseHit(t, 0.2, 0.12, 5000);
+        const base = pos === 2 ? [523.25, 659.25, 783.99] : [493.88, 587.33, 739.99];
+        base.forEach((f, i) => tone(f, t + i * 0.09, 0.4, { type: 'triangle', peak: 0.16 }));
+        chord(base, t + 0.28, 0.8, { type: 'sine', peak: 0.09 });
+      }
+    }
+
+    // Colpo di rumore (crash/hi-hat)
+    function noiseHit(t0, dur, peak, cutoff) {
+      if (!aOK()) return;
+      const buf = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      const src = audioCtx.createBufferSource(); src.buffer = buf;
+      const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = cutoff || 4000;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(peak || 0.15, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(hp); hp.connect(g); g.connect(master);
+      src.start(t0); src.stop(t0 + dur);
+    }
+
+    // Premio: campanellini/sparkle
+    function sparkleSound(big) {
+      if (!aOK()) return;
+      const t = T();
+      const notes = big ? [784, 988, 1319, 1568, 2093] : [784, 1047, 1319];
+      notes.forEach((f, i) => tone(f, t + i * 0.07, 0.5, { type: 'sine', peak: big ? 0.12 : 0.09 }));
+    }
+
+    // 4°/5°: "womp womp" trombone discendente (comico)
+    function wompSound() {
+      if (!aOK()) return;
+      const t = T();
+      const start = [233.08, 207.65, 185.0, 155.56]; // Bb3, Ab3, F#3, Eb3 discendenti
+      start.forEach((f, i) => {
+        tone(f, t + i * 0.42, 0.4, { type: 'sawtooth', peak: 0.14, glideTo: f * 0.86, filter: 1100 });
+      });
+    }
+
+    // Finale trionfale
+    function finaleSound() {
+      if (!aOK()) return;
+      const t = T();
+      noiseHit(t, 0.5, 0.2, 5000);
+      chord([261.63, 329.63, 392.0, 523.25, 659.25], t, 2.2, { type: 'sawtooth', peak: 0.13, filter: 2600 });
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, t + i * 0.12, 0.7, { type: 'triangle', peak: 0.16 }));
+    }
+
+    // Sottofondo ambient soffuso durante lo show
+    function ambientStart() {
+      if (!aOK() || ambientNodes) return;
+      const t = T();
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.03, t + 2.5);
+      const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 700;
+      const oscs = [130.81, 196.0, 261.63].map((freq, i) => {
+        const o = audioCtx.createOscillator();
+        o.type = 'sine'; o.frequency.value = freq;
+        o.detune.value = i * 4 - 4;
+        o.connect(g); o.start(t); return o;
+      });
+      g.connect(f); f.connect(master);
+      ambientNodes = { g: g, oscs: oscs };
+    }
+    function ambientStop() {
+      if (!ambientNodes) return;
+      const t = audioCtx ? T() : 0;
+      try {
+        ambientNodes.g.gain.cancelScheduledValues(t);
+        ambientNodes.g.gain.setTargetAtTime(0.0001, t, 0.4);
+        ambientNodes.oscs.forEach((o) => o.stop(t + 1.2));
+      } catch (e) {}
+      ambientNodes = null;
+    }
+
+    function setMuted(m) {
+      muted = m;
+      if (master) master.gain.value = muted ? 0 : 1;
+      btnMute.textContent = muted ? '🔇 Muto' : '🔊 Audio';
     }
 
     // ---------- Confetti (safe wrapper) ----------
@@ -2029,6 +2207,7 @@
       winners = null;
       idx = -1;
       busy = false;
+      ambientStop();
       stageInner.innerHTML = '';
       stage.classList.add('hidden');
       podium.classList.add('hidden');
@@ -2070,6 +2249,9 @@
       } else if (key === 'f' || key === 'F') {
         e.preventDefault();
         toggleFullscreen();
+      } else if (key === 'm' || key === 'M') {
+        e.preventDefault();
+        setMuted(!muted);
       }
     });
 
@@ -2081,6 +2263,7 @@
     btnStart.addEventListener('click', startShow);
     btnRestart.addEventListener('click', restart);
     btnFull.addEventListener('click', toggleFullscreen);
+    btnMute.addEventListener('click', () => { initAudio(); setMuted(!muted); });
 
     validateSelection();
   })();
