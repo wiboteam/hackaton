@@ -2073,34 +2073,43 @@
     }
     function chord(freqs, t0, dur, opts) { freqs.forEach((f) => tone(f, t0, dur, opts)); }
 
-    // Rullo di tamburi: rumore filtrato con tremolo che accelera + tensione crescente
+    // Buffer di rumore breve riusato per ogni colpo di rullante
+    let snareBuf = null;
+    function getSnareBuf() {
+      if (snareBuf) return snareBuf;
+      const dur = 0.08;
+      snareBuf = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+      const d = snareBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      return snareBuf;
+    }
+    // Un singolo colpo di rullante: rumore high-pass con decadimento rapido
+    function snareHit(t0, amp) {
+      const src = audioCtx.createBufferSource(); src.buffer = getSnareBuf();
+      const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1400;
+      const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 0.6;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(amp, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.045);
+      src.connect(hp); hp.connect(bp); bp.connect(g); g.connect(master);
+      src.start(t0); src.stop(t0 + 0.08);
+    }
+    // Rullo di rullante: tanti colpetti che accelerano e crescono di volume
     function drumrollSound(durSec, big) {
       if (!aOK()) return;
       const t0 = T();
-      const len = Math.max(0.3, durSec);
-      const buf = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * len), audioCtx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
-      const src = audioCtx.createBufferSource(); src.buffer = buf;
-      const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = big ? 220 : 180; bp.Q.value = 0.8;
-      const g = audioCtx.createGain();
-      // volume cresce verso la fine
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(big ? 0.16 : 0.10, t0 + len * 0.85);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
-      // tremolo che accelera (roll)
-      const lfo = audioCtx.createOscillator(); const lfoG = audioCtx.createGain();
-      lfo.type = 'sawtooth';
-      lfo.frequency.setValueAtTime(9, t0);
-      lfo.frequency.exponentialRampToValueAtTime(big ? 34 : 24, t0 + len);
-      lfoG.gain.value = 0.5;
-      const trem = audioCtx.createGain(); trem.gain.value = 0.5;
-      lfo.connect(lfoG); lfoG.connect(trem.gain);
-      src.connect(bp); bp.connect(trem); trem.connect(g); g.connect(master);
-      src.start(t0); src.stop(t0 + len);
-      lfo.start(t0); lfo.stop(t0 + len);
-      // tono di tensione che sale
-      tone(big ? 110 : 130, t0, len, { type: 'sawtooth', peak: 0.05, glideTo: big ? 330 : 260, filter: 900 });
+      const len = Math.max(0.4, durSec);
+      const startInt = 0.06;                 // ~17 colpi/sec all'inizio
+      const endInt = big ? 0.022 : 0.03;     // accelera a ~45/33 colpi/sec
+      let t = t0;
+      while (t < t0 + len) {
+        const prog = (t - t0) / len;         // 0..1
+        const amp = (big ? 0.10 : 0.075) * (0.35 + 0.65 * prog) * (0.85 + Math.random() * 0.3);
+        snareHit(t, amp);
+        t += startInt + (endInt - startInt) * prog;
+      }
+      // colpo finale secco a chiudere il rullo
+      snareHit(t0 + len, big ? 0.16 : 0.12);
     }
 
     // Fanfara di rivelazione (piena per il 1°, breve per 2°/3°)
