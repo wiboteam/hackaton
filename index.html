@@ -111,6 +111,14 @@
     color: var(--brand);
     line-height: 0.9;
   }
+  /* Logo wibo (SVG vettoriale, eredita il colore del brand via currentColor) */
+  .logo-svg {
+    display: block;
+    height: 1em;
+    width: auto;
+    margin: 0 auto;
+    color: var(--brand);
+  }
 
   /* ---------- Setup screen ---------- */
   #setup .panel {
@@ -634,7 +642,17 @@
   <!-- ===================== SETUP ===================== -->
   <section id="setup" class="screen">
     <div class="panel">
-      <div class="wordmark logo-big">wibo</div>
+      <div class="wordmark logo-big">
+        <svg class="logo-svg" viewBox="0 0 940 350" role="img" aria-label="wibo"
+             fill="none" stroke="currentColor" stroke-width="66"
+             stroke-linecap="butt" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 150 L138 305 L215 172 L292 305 L380 150" />
+          <path d="M440 305 L506 305 L506 40 L440 72 Z" fill="currentColor" stroke="none" />
+          <path d="M560 305 L626 305 L626 40 L560 72 Z" fill="currentColor" stroke="none" />
+          <circle cx="660" cy="225" r="47" />
+          <circle cx="832" cy="225" r="47" />
+        </svg>
+      </div>
       <div class="subtitle slab">Premiazione Hackathon · scegli i vincitori</div>
 
       <div class="field">
