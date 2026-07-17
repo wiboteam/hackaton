@@ -1849,6 +1849,9 @@
 
     function renderDone() {
       hidePrompt();
+      stageInner.innerHTML = '';        // svuota la card del premio: niente sovrapposizioni
+      darkVeil.style.transition = 'opacity 0.8s ease';
+      darkVeil.style.opacity = 0;
       finale.classList.add('show');
       grandFinaleConfetti();
     }
