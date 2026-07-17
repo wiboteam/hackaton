@@ -2124,11 +2124,17 @@
         chord([261.63, 329.63, 392.0, 523.25], t + 0.44, 1.4, { type: 'sawtooth', peak: 0.12, filter: 2200 });
         // brillantini
         [1568, 2093].forEach((f, i) => tone(f, t + 0.6 + i * 0.12, 0.4, { type: 'sine', peak: 0.08 }));
+        // FESTA: folla che esulta + fuochi d'artificio
+        cheerSound(t + 0.15, 2.2, 0.12);
+        fireworkSound(t + 0.3);
+        fireworkSound(t + 1.1);
       } else {
         noiseHit(t, 0.2, 0.12, 5000);
         const base = pos === 2 ? [523.25, 659.25, 783.99] : [493.88, 587.33, 739.99];
         base.forEach((f, i) => tone(f, t + i * 0.09, 0.4, { type: 'triangle', peak: 0.16 }));
         chord(base, t + 0.28, 0.8, { type: 'sine', peak: 0.09 });
+        // applauso più contenuto per 2°/3°
+        cheerSound(t + 0.1, 1.2, 0.07);
       }
     }
 
@@ -2145,6 +2151,56 @@
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       src.connect(hp); hp.connect(g); g.connect(master);
       src.start(t0); src.stop(t0 + dur);
+    }
+
+    // Burst di rumore generico (boom/crepitio/applauso) con inviluppo
+    function noiseBurst(t0, dur, peak, kind, cutoff) {
+      if (!aOK()) return;
+      const buf = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+      const src = audioCtx.createBufferSource(); src.buffer = buf;
+      const f = audioCtx.createBiquadFilter();
+      if (kind === 'low') { f.type = 'lowpass'; f.frequency.value = cutoff || 200; }
+      else if (kind === 'high') { f.type = 'highpass'; f.frequency.value = cutoff || 3000; }
+      else { f.type = 'bandpass'; f.frequency.value = cutoff || 2200; f.Q.value = 0.5; }
+      const g = audioCtx.createGain();
+      const atk = Math.min(0.03, dur * 0.25);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(t0); src.stop(t0 + dur + 0.02);
+    }
+
+    // Folla che esulta / applausi: swell di rumore + applausi sparsi + "wooo"
+    function cheerSound(t0, dur, peak) {
+      if (!aOK()) return;
+      // base: applauso sostenuto che gonfia e scende
+      noiseBurst(t0, dur, peak, 'band', 2100);
+      noiseBurst(t0, dur, peak * 0.7, 'high', 3500);
+      // applausi/battimani sparsi
+      const claps = Math.round(dur * 22);
+      for (let i = 0; i < claps; i++) {
+        noiseBurst(t0 + Math.random() * dur, 0.03, peak * (0.3 + Math.random() * 0.5), 'high', 3000);
+      }
+      // qualche "wooo" della folla (toni che salgono)
+      const woos = peak > 0.1 ? 3 : 1;
+      for (let i = 0; i < woos; i++) {
+        const st = t0 + Math.random() * dur * 0.5;
+        const base = 300 + Math.random() * 200;
+        tone(base, st, 0.6, { type: 'sawtooth', peak: peak * 0.35, glideTo: base * 1.5, filter: 1200 });
+      }
+    }
+
+    // Fuoco d'artificio: fischio che sale → boom → crepitio
+    function fireworkSound(t0) {
+      if (!aOK()) return;
+      tone(500, t0, 0.42, { type: 'sine', peak: 0.05, glideTo: 1500 });       // fischio
+      noiseBurst(t0 + 0.44, 0.28, 0.18, 'low', 170);                           // boom
+      for (let i = 0; i < 9; i++) {                                            // crepitio
+        noiseBurst(t0 + 0.46 + Math.random() * 0.45, 0.04, 0.04 + Math.random() * 0.06, 'high', 4500);
+      }
     }
 
     // Premio: campanellini/sparkle
@@ -2172,6 +2228,9 @@
       noiseHit(t, 0.5, 0.2, 5000);
       chord([261.63, 329.63, 392.0, 523.25, 659.25], t, 2.2, { type: 'sawtooth', peak: 0.13, filter: 2600 });
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, t + i * 0.12, 0.7, { type: 'triangle', peak: 0.16 }));
+      // FESTA GRANDE: folla in delirio + raffica di fuochi d'artificio
+      cheerSound(t + 0.1, 3.2, 0.14);
+      [0.2, 0.9, 1.5, 2.2].forEach((off) => fireworkSound(t + off));
     }
 
     // Sottofondo ambient soffuso durante lo show
