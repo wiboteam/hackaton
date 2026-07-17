@@ -469,6 +469,34 @@
     z-index: 15;
   }
 
+  /* ---------- Intro / avvio premiazione ---------- */
+  .intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(14px, 3vh, 30px);
+  }
+  .intro-logo {
+    height: clamp(70px, 13vh, 150px);
+    width: auto;
+    filter: drop-shadow(0 10px 26px rgba(100,82,217,0.22));
+  }
+  .intro-title {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    font-size: clamp(34px, 6vw, 78px);
+    line-height: 1.04;
+    color: var(--text);
+    text-wrap: balance;
+  }
+  .intro-sub {
+    color: var(--brand);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: clamp(13px, 1.9vw, 20px);
+  }
+
   /* ---------- Loser card (4°/5°, mood pollici in giù) ---------- */
   .loser-card {
     display: flex;
@@ -1772,6 +1800,8 @@
 
     function buildSteps() {
       steps = [];
+      // Schermata intermedia di avvio prima delle rivelazioni
+      steps.push({ type: 'intro' });
       // Prima i "non vincitori" 5° e 4° — mood pollici in giù, niente suspense
       steps.push({ type: 'loser', pos: 5 });
       steps.push({ type: 'loser', pos: 4 });
@@ -1809,7 +1839,8 @@
       idx++;
       if (idx >= steps.length) return;
       const step = steps[idx];
-      if (step.type === 'loser') renderLoser(step.pos);
+      if (step.type === 'intro') renderIntro();
+      else if (step.type === 'loser') renderLoser(step.pos);
       else if (step.type === 'announce') renderAnnounce(step.pos);
       else if (step.type === 'suspense') renderSuspense(step.pos, step.phase);
       else if (step.type === 'reveal') renderReveal(step.pos);
@@ -1822,6 +1853,20 @@
       if (pos === 1) return 'radial-gradient(circle at 35% 30%, #fff2b0, #FFD24A 45%, #F0B400 90%)';
       if (pos === 2) return 'radial-gradient(circle at 35% 30%, #ffffff, #E4E8EC 45%, #9DA8A7 92%)';
       return 'radial-gradient(circle at 35% 30%, #ffd9a8, #E0863C 45%, #A85D22 90%)';
+    }
+
+    function renderIntro() {
+      hidePrompt();
+      const logoEl = document.querySelector('#setup .logo-img');
+      const logoSrc = logoEl ? logoEl.src : '';
+      stageInner.innerHTML =
+        '<div class="intro anim-in" id="introBox">' +
+          (logoSrc ? '<img class="intro-logo" src="' + logoSrc + '" alt="wibo" />' : '') +
+          '<div class="intro-title">È il momento della premiazione</div>' +
+          '<div class="intro-sub">Hackathon AI · pronti a scoprire la classifica?</div>' +
+        '</div>';
+      requestAnimationFrame(() => $('#introBox').classList.add('play'));
+      showPrompt();
     }
 
     const LOSER_QUIPS = {
