@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wibo Retreat 2026 · Hackathon AI · Premiazione</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --viola: #6452D9;
+    --viola-soft: #8a7bff;
+    --bg-0: #0c0820;
+    --bg-1: #150f36;
+    --bg-2: #1d1447;
+    --menta: #2BD988;
+    --arancio: #FFA109;
+    --giallo: #FFF68A;
+    --oro: #FFD24A;
+    --oro-2: #FFB800;
+    --argento: #D6DCE6;
+    --argento-2: #A6B0C0;
+    --bronzo: #E08C42;
+    --bronzo-2: #B5651D;
+    --testo: #F3F1FF;
+    --testo-dim: #b9b2e0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg-0);
+    color: var(--testo);
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 700px at 50% -10%, rgba(100,82,217,0.45), transparent 60%),
+      radial-gradient(900px 600px at 10% 110%, rgba(43,217,136,0.10), transparent 60%),
+      radial-gradient(900px 600px at 90% 110%, rgba(255,161,9,0.10), transparent 60%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-0) 70%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, .slab { font-family: 'Roboto Slab', Georgia, serif; }
+
+  /* ---------- Layout scaffolding ---------- */
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(20px, 4vh, 60px);
+    text-align: center;
+  }
+  .hidden { display: none !important; }
+
+  .eyebrow {
+    position: fixed;
+    top: clamp(16px, 3vh, 34px);
+    left: 50%;
+    transform: translateX(-50%);
+    letter-spacing: 0.42em;
+    font-size: clamp(11px, 1.4vw, 16px);
+    font-weight: 700;
+    color: var(--testo-dim);
+    text-transform: uppercase;
+    z-index: 30;
+    white-space: nowrap;
+  }
+  .eyebrow b { color: var(--menta); font-weight: 900; }
+
+  .wordmark {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    background: linear-gradient(120deg, #fff, var(--giallo) 40%, var(--menta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 0.9;
+  }
+
+  /* ---------- Setup screen ---------- */
+  #setup .panel {
+    width: min(680px, 92vw);
+    background: linear-gradient(180deg, rgba(43,30,90,0.72), rgba(20,14,52,0.82));
+    border: 1px solid rgba(138,123,255,0.35);
+    border-radius: 26px;
+    padding: clamp(26px, 4vh, 48px);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+  }
+  #setup .logo-big {
+    font-size: clamp(58px, 11vw, 130px);
+    margin-bottom: 6px;
+  }
+  #setup .subtitle {
+    color: var(--testo-dim);
+    font-size: clamp(15px, 2vw, 20px);
+    margin-bottom: clamp(20px, 4vh, 38px);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+  .field { margin-bottom: 20px; text-align: left; }
+  .field label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: clamp(16px, 2vw, 21px);
+    margin-bottom: 10px;
+  }
+  .rank-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: 18px;
+    color: #241a00;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    flex: none;
+  }
+  .chip-1 { background: linear-gradient(145deg, var(--oro), var(--oro-2)); }
+  .chip-2 { background: linear-gradient(145deg, #fff, var(--argento-2)); }
+  .chip-3 { background: linear-gradient(145deg, var(--bronzo), var(--bronzo-2)); color:#2a1500;}
+
+  select {
+    width: 100%;
+    padding: 15px 18px;
+    font-size: clamp(15px, 1.9vw, 19px);
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    color: var(--testo);
+    background: rgba(12,8,32,0.85);
+    border: 1.5px solid rgba(138,123,255,0.4);
+    border-radius: 14px;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%238a7bff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  select:focus {
+    outline: none;
+    border-color: var(--viola-soft);
+    box-shadow: 0 0 0 4px rgba(138,123,255,0.22);
+  }
+  select option { background: #150f36; color: var(--testo); }
+
+  .warn {
+    color: var(--arancio);
+    font-weight: 700;
+    font-size: 14px;
+    min-height: 20px;
+    margin: 4px 0 14px;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .btn {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    border-radius: 16px;
+    transition: transform .15s ease, box-shadow .2s ease, filter .2s;
+  }
+  .btn:active { transform: translateY(1px) scale(0.99); }
+  .btn-primary {
+    width: 100%;
+    padding: 18px;
+    font-size: clamp(17px, 2.2vw, 22px);
+    background: linear-gradient(120deg, var(--viola), var(--menta) 130%);
+    box-shadow: 0 16px 40px rgba(100,82,217,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 20px 52px rgba(100,82,217,0.7); }
+
+  .setup-hint {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--testo-dim);
+    letter-spacing: 0.03em;
+  }
+  .setup-hint kbd {
+    background: rgba(138,123,255,0.22);
+    border: 1px solid rgba(138,123,255,0.4);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: 'Lato', monospace;
+    font-size: 12px;
+  }
+
+  /* ---------- Stage (show) ---------- */
+  #stage { justify-content: center; }
+
+  .stage-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Announce phase ("3° CLASSIFICATO", waiting) */
+  .announce {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(14px, 3vh, 30px);
+  }
+  .announce .medal-ring {
+    width: clamp(120px, 18vh, 200px);
+    height: clamp(120px, 18vh, 200px);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: clamp(52px, 9vh, 104px);
+    position: relative;
+  }
+  .announce .rank-label {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: clamp(38px, 8vw, 96px);
+    letter-spacing: 0.02em;
+    line-height: 1.02;
+  }
+  .announce .rank-sub {
+    color: var(--testo-dim);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: clamp(12px, 1.8vw, 18px);
+    font-weight: 700;
+  }
+
+  .prompt-advance {
+    position: fixed;
+    bottom: clamp(26px, 6vh, 64px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--testo-dim);
+    font-size: clamp(13px, 1.6vw, 18px);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    animation: pulseHint 1.8s ease-in-out infinite;
+    z-index: 25;
+  }
+  .prompt-advance kbd {
+    background: rgba(138,123,255,0.25);
+    border: 1px solid rgba(138,123,255,0.45);
+    border-radius: 7px;
+    padding: 3px 10px;
+    color: #fff;
+    font-family: inherit;
+  }
+  @keyframes pulseHint {
+    0%,100% { opacity: 0.45; }
+    50% { opacity: 1; }
+  }
+
+  /* Reveal card */
+  .reveal-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(10px, 2vh, 22px);
+    max-width: min(1100px, 94vw);
+  }
+  .reveal-medal {
+    width: clamp(110px, 17vh, 190px);
+    height: clamp(110px, 17vh, 190px);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    color: #2a1e00;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 3px 10px rgba(255,255,255,0.4), inset 0 -6px 14px rgba(0,0,0,0.25);
+  }
+  .reveal-medal .pos-num {
+    font-size: clamp(56px, 11vh, 120px);
+    line-height: 1;
+  }
+  .reveal-medal .pos-deg { font-size: 0.5em; vertical-align: super; }
+
+  .medal-gold   { background: radial-gradient(circle at 35% 30%, #fff2b0, var(--oro) 45%, var(--oro-2) 90%); }
+  .medal-silver { background: radial-gradient(circle at 35% 30%, #ffffff, var(--argento) 45%, var(--argento-2) 90%); }
+  .medal-bronze { background: radial-gradient(circle at 35% 30%, #ffd9a8, var(--bronzo) 45%, var(--bronzo-2) 90%); color:#2a1500;}
+
+  .reveal-table {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: clamp(15px, 2.2vw, 26px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--menta);
+  }
+  .reveal-challenge {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: clamp(34px, 6.5vw, 84px);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    background: linear-gradient(100deg, #fff, var(--giallo));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-wrap: balance;
+  }
+  .reveal-members {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(10px, 1.6vw, 22px);
+    margin-top: clamp(6px, 1.5vh, 16px);
+  }
+  .member {
+    background: rgba(138,123,255,0.14);
+    border: 1px solid rgba(138,123,255,0.35);
+    border-radius: 999px;
+    padding: clamp(9px, 1.4vh, 15px) clamp(16px, 2.2vw, 30px);
+    font-size: clamp(15px, 2vw, 25px);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    backdrop-filter: blur(3px);
+  }
+  .member .dot {
+    display:inline-block; width:9px; height:9px; border-radius:50%;
+    margin-right:10px; vertical-align: middle;
+    background: var(--arancio);
+    box-shadow: 0 0 10px var(--arancio);
+  }
+
+  /* First-place is bigger */
+  .reveal-card.first .reveal-challenge { font-size: clamp(40px, 7.5vw, 104px); }
+  .reveal-card.first .reveal-medal {
+    width: clamp(130px, 20vh, 230px);
+    height: clamp(130px, 20vh, 230px);
+  }
+  .reveal-card.first .crown {
+    position: absolute;
+    top: -0.55em;
+    font-size: clamp(40px, 7vh, 78px);
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));
+    animation: crownFloat 2.4s ease-in-out infinite;
+  }
+  @keyframes crownFloat {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-8px) rotate(4deg); }
+  }
+
+  /* Drumroll */
+  .drumroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(18px, 4vh, 40px);
+  }
+  .drumroll .dr-text {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: clamp(34px, 6.5vw, 82px);
+    letter-spacing: 0.01em;
+    line-height: 1.06;
+    text-wrap: balance;
+    animation: drShake 0.35s ease-in-out infinite;
+  }
+  @keyframes drShake {
+    0%,100% { transform: translate(0,0); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(2px, -1px); }
+    75% { transform: translate(-1px, -1px); }
+  }
+  .dr-dots {
+    display: flex; gap: 18px;
+  }
+  .dr-dots span {
+    width: clamp(16px, 2.4vh, 26px);
+    height: clamp(16px, 2.4vh, 26px);
+    border-radius: 50%;
+    background: var(--oro);
+    box-shadow: 0 0 24px var(--oro);
+    animation: drPulse 0.9s ease-in-out infinite;
+  }
+  .dr-dots span:nth-child(2){ animation-delay: 0.15s; }
+  .dr-dots span:nth-child(3){ animation-delay: 0.3s; }
+  .dr-dots span:nth-child(4){ animation-delay: 0.45s; }
+  @keyframes drPulse {
+    0%,100% { transform: scale(0.6); opacity: 0.4; }
+    50% { transform: scale(1.25); opacity: 1; }
+  }
+  /* Growing darkness overlay for drumroll tension */
+  #darkVeil {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at 50% 50%, transparent, #000 75%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 15;
+  }
+
+  /* Podium (side summary) */
+  #podium {
+    position: fixed;
+    right: clamp(14px, 2vw, 40px);
+    bottom: clamp(14px, 2.5vh, 40px);
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(8px, 1vw, 16px);
+    z-index: 20;
+    pointer-events: none;
+  }
+  .podium-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: clamp(76px, 8vw, 118px);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .podium-col.show { opacity: 1; transform: translateY(0); }
+  .podium-badge {
+    width: clamp(30px, 3.2vw, 44px);
+    height: clamp(30px, 3.2vw, 44px);
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: 'Roboto Slab', serif; font-weight: 900;
+    font-size: clamp(14px, 1.6vw, 20px);
+    color:#241a00;
+    margin-bottom: 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  }
+  .podium-name {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: clamp(10px, 1.1vw, 14px);
+    color: var(--testo);
+    text-align:center;
+    line-height:1.1;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .podium-bar {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(180deg, rgba(138,123,255,0.5), rgba(100,82,217,0.25));
+    border: 1px solid rgba(138,123,255,0.4);
+    border-bottom: none;
+  }
+  .podium-col[data-pos="1"] .podium-bar { height: clamp(70px, 12vh, 130px); background: linear-gradient(180deg, var(--oro), rgba(255,184,0,0.35)); }
+  .podium-col[data-pos="2"] .podium-bar { height: clamp(50px, 9vh, 96px);  background: linear-gradient(180deg, var(--argento), rgba(166,176,192,0.35)); }
+  .podium-col[data-pos="3"] .podium-bar { height: clamp(36px, 6.5vh, 70px); background: linear-gradient(180deg, var(--bronzo), rgba(181,101,29,0.35)); }
+  .badge-1 { background: linear-gradient(145deg, var(--oro), var(--oro-2)); }
+  .badge-2 { background: linear-gradient(145deg, #fff, var(--argento-2)); }
+  .badge-3 { background: linear-gradient(145deg, var(--bronzo), var(--bronzo-2)); color:#2a1500; }
+
+  /* Finale banner */
+  #finale {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 22;
+    pointer-events: none;
+  }
+  #finale.show { display: flex; }
+  #finale .fin-text {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 900;
+    font-size: clamp(22px, 3.6vw, 46px);
+    color: var(--giallo);
+    letter-spacing: 0.06em;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    opacity: 0;
+    animation: finIn 1s ease forwards;
+  }
+  @keyframes finIn { to { opacity: 1; transform: translateY(0);} from { opacity:0; transform: translateY(20px);} }
+
+  /* ---------- Controls (top-right) ---------- */
+  .controls {
+    position: fixed;
+    top: clamp(12px, 2vh, 22px);
+    right: clamp(12px, 2vw, 24px);
+    display: flex;
+    gap: 10px;
+    z-index: 40;
+  }
+  .btn-ghost {
+    background: rgba(138,123,255,0.14);
+    border: 1px solid rgba(138,123,255,0.35);
+    color: var(--testo-dim);
+    padding: 9px 15px;
+    font-size: 12px;
+    border-radius: 11px;
+    letter-spacing: 0.08em;
+  }
+  .btn-ghost:hover { color: #fff; background: rgba(138,123,255,0.28); }
+
+  /* ---------- Animations for reveal entrance ---------- */
+  .anim-in > * { opacity: 0; }
+  .anim-in.play > * {
+    animation: elemIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .anim-in.play > *:nth-child(1) { animation-delay: 0.05s; }
+  .anim-in.play > *:nth-child(2) { animation-delay: 0.18s; }
+  .anim-in.play > *:nth-child(3) { animation-delay: 0.32s; }
+  .anim-in.play > *:nth-child(4) { animation-delay: 0.46s; }
+  @keyframes elemIn {
+    0%   { opacity: 0; transform: translateY(38px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .announce.play { animation: announceIn 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes announceIn {
+    0% { opacity: 0; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .glow-gold   { box-shadow: 0 0 0 6px rgba(255,210,74,0.15), 0 0 60px rgba(255,184,0,0.55); }
+  .glow-silver { box-shadow: 0 0 0 6px rgba(214,220,230,0.15), 0 0 50px rgba(214,220,230,0.4); }
+  .glow-bronze { box-shadow: 0 0 0 6px rgba(224,140,66,0.15), 0 0 50px rgba(224,140,66,0.45); }
+
+  @media (max-width: 640px) {
+    .eyebrow { letter-spacing: 0.25em; font-size: 10px; }
+    #podium { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow">WIBO RETREAT 2026 · HACKATHON <b>AI</b></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-ghost" id="btnFull" title="Schermo intero (F)">⛶ Fullscreen</button>
+    <button class="btn btn-ghost hidden" id="btnRestart" title="Ricomincia (R)">↺ Ricomincia</button>
+  </div>
+
+  <!-- ===================== SETUP ===================== -->
+  <section id="setup" class="screen">
+    <div class="panel">
+      <div class="wordmark logo-big">wibo</div>
+      <div class="subtitle slab">Premiazione Hackathon · scegli i vincitori</div>
+
+      <div class="field">
+        <label><span class="rank-chip chip-1">1</span> Primo classificato</label>
+        <select id="sel-1"></select>
+      </div>
+      <div class="field">
+        <label><span class="rank-chip chip-2">2</span> Secondo classificato</label>
+        <select id="sel-2"></select>
+      </div>
+      <div class="field">
+        <label><span class="rank-chip chip-3">3</span> Terzo classificato</label>
+        <select id="sel-3"></select>
+      </div>
+
+      <div class="warn" id="warn"></div>
+      <button class="btn btn-primary" id="btnStart">Avvia premiazione ▸</button>
+      <div class="setup-hint">
+        Durante lo show: <kbd>Spazio</kbd> / click per avanzare · <kbd>F</kbd> fullscreen · <kbd>R</kbd> ricomincia
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== STAGE ===================== -->
+  <section id="stage" class="screen hidden">
+    <div class="stage-inner" id="stageInner"></div>
+    <div class="prompt-advance hidden" id="promptAdvance">
+      Premi <kbd>Spazio</kbd> o clicca per continuare
+    </div>
+  </section>
+
+  <!-- Podium summary -->
+  <div id="podium" class="hidden">
+    <div class="podium-col" data-pos="3">
+      <div class="podium-badge badge-3">3</div>
+      <div class="podium-name" id="pod-name-3">—</div>
+      <div class="podium-bar"></div>
+    </div>
+    <div class="podium-col" data-pos="1">
+      <div class="podium-badge badge-1">1</div>
+      <div class="podium-name" id="pod-name-1">—</div>
+      <div class="podium-bar"></div>
+    </div>
+    <div class="podium-col" data-pos="2">
+      <div class="podium-badge badge-2">2</div>
+      <div class="podium-name" id="pod-name-2">—</div>
+      <div class="podium-bar"></div>
+    </div>
+  </div>
+
+  <!-- Finale -->
+  <div id="finale">
+    <div class="fin-text">🎉 Complimenti a tutti i team! · Wibo Retreat 2026 🎉</div>
+  </div>
+
+  <div id="darkVeil"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // ---------- Data ----------
+    const TABLES = [
+      { id: 1, name: 'Tavolo 1', challenge: 'Sales Sparring Partner',
+        members: ['Nicholas Baccarini', 'Giulio Lombardo', 'Giovanni Gibiino'] },
+      { id: 2, name: 'Tavolo 2', challenge: 'Agente Calendario (stile Howie)',
+        members: ['Alessandro Busso', 'Annalisa Di Nunzio', 'Fiammetta Aquila'] },
+      { id: 3, name: 'Tavolo 3', challenge: 'Agente Recruiting (headhunter)',
+        members: ['Marco Provezza', 'Luca Sartoni', 'Maddalena Cipriani'] },
+      { id: 4, name: 'Tavolo 4', challenge: 'Copilot Comunicazioni Cliente',
+        members: ['Samuele Kregar', 'Anna Cittadoni', 'Paolo Catalano'] },
+      { id: 5, name: 'Tavolo 5', challenge: 'Automazione Post-Call Sales',
+        members: ['Davide Tarulli', 'Dario Ronchetti', 'Giuseppe Augelli'] },
+    ];
+
+    const ORD = { 1: '1°', 2: '2°', 3: '3°' };
+    const ORD_WORD = { 1: 'PRIMO', 2: 'SECONDO', 3: 'TERZO' };
+    const MEDAL_CLASS = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+
+    // ---------- Elements ----------
+    const $ = (s) => document.querySelector(s);
+    const setup = $('#setup');
+    const stage = $('#stage');
+    const stageInner = $('#stageInner');
+    const promptAdvance = $('#promptAdvance');
+    const podium = $('#podium');
+    const finale = $('#finale');
+    const darkVeil = $('#darkVeil');
+    const warn = $('#warn');
+    const btnStart = $('#btnStart');
+    const btnRestart = $('#btnRestart');
+    const btnFull = $('#btnFull');
+    const selects = [$('#sel-1'), $('#sel-2'), $('#sel-3')];
+
+    // ---------- Populate selects ----------
+    function optionLabel(t) { return `${t.name} — ${t.challenge}`; }
+    selects.forEach((sel, i) => {
+      TABLES.forEach((t) => {
+        const o = document.createElement('option');
+        o.value = String(t.id);
+        o.textContent = optionLabel(t);
+        sel.appendChild(o);
+      });
+      // sensible defaults: tables 1,2,3 for pos 1,2,3
+      sel.value = String(i + 1);
+    });
+
+    function validateSelection() {
+      const ids = selects.map((s) => s.value);
+      const uniq = new Set(ids);
+      if (uniq.size < 3) {
+        warn.textContent = '⚠ Ogni posizione deve avere un tavolo diverso.';
+        return null;
+      }
+      warn.textContent = '';
+      return {
+        1: TABLES.find((t) => String(t.id) === selects[0].value),
+        2: TABLES.find((t) => String(t.id) === selects[1].value),
+        3: TABLES.find((t) => String(t.id) === selects[2].value),
+      };
+    }
+    selects.forEach((s) => s.addEventListener('change', validateSelection));
+
+    // ---------- Show state machine ----------
+    // Sequence of steps:
+    //  announce-3 -> reveal-3 -> announce-2 -> reveal-2 -> drumroll-1 -> reveal-1 -> done
+    let winners = null;
+    let steps = [];
+    let idx = -1;
+    let busy = false; // block input during animations
+
+    function buildSteps() {
+      steps = [
+        { type: 'announce', pos: 3 },
+        { type: 'reveal', pos: 3 },
+        { type: 'announce', pos: 2 },
+        { type: 'reveal', pos: 2 },
+        { type: 'drumroll', pos: 1 },
+        { type: 'reveal', pos: 1 },
+        { type: 'done' },
+      ];
+    }
+
+    function startShow() {
+      const w = validateSelection();
+      if (!w) return;
+      winners = w;
+      buildSteps();
+      idx = -1;
+      setup.classList.add('hidden');
+      stage.classList.remove('hidden');
+      podium.classList.remove('hidden');
+      btnRestart.classList.remove('hidden');
+      finale.classList.remove('show');
+      darkVeil.style.opacity = 0;
+      // reset podium columns
+      document.querySelectorAll('.podium-col').forEach((c) => c.classList.remove('show'));
+      ['1','2','3'].forEach((p) => { $('#pod-name-' + p).textContent = '—'; });
+      advance();
+    }
+
+    function advance() {
+      if (busy) return;
+      idx++;
+      if (idx >= steps.length) return;
+      const step = steps[idx];
+      if (step.type === 'announce') renderAnnounce(step.pos);
+      else if (step.type === 'reveal') renderReveal(step.pos);
+      else if (step.type === 'drumroll') renderDrumroll(step.pos);
+      else if (step.type === 'done') renderDone();
+    }
+
+    // ---------- Renderers ----------
+    function medalGlyph(pos) {
+      return pos === 1 ? '🥇' : pos === 2 ? '🥈' : '🥉';
+    }
+
+    function renderAnnounce(pos) {
+      hidePrompt();
+      const cls = MEDAL_CLASS[pos];
+      stageInner.innerHTML = `
+        <div class="announce" id="announceBox">
+          <div class="medal-ring glow-${cls}" style="background:${medalBg(pos)}">${medalGlyph(pos)}</div>
+          <div class="rank-sub">sta per arrivare il</div>
+          <div class="rank-label">${ORD[pos]} CLASSIFICATO</div>
+        </div>`;
+      requestAnimationFrame(() => $('#announceBox').classList.add('play'));
+      showPrompt();
+    }
+
+    function medalBg(pos) {
+      if (pos === 1) return 'radial-gradient(circle at 35% 30%, #fff2b0, #FFD24A 45%, #FFB800 90%)';
+      if (pos === 2) return 'radial-gradient(circle at 35% 30%, #ffffff, #D6DCE6 45%, #A6B0C0 90%)';
+      return 'radial-gradient(circle at 35% 30%, #ffd9a8, #E08C42 45%, #B5651D 90%)';
+    }
+
+    function renderReveal(pos) {
+      hidePrompt();
+      busy = true;
+      const t = winners[pos];
+      const isFirst = pos === 1;
+      const cls = MEDAL_CLASS[pos];
+      const crown = isFirst ? '<div class="crown">👑</div>' : '';
+      const membersHtml = t.members
+        .map((m) => `<div class="member"><span class="dot"></span>${m}</div>`)
+        .join('');
+
+      stageInner.innerHTML = `
+        <div class="reveal-card ${isFirst ? 'first' : ''} anim-in" id="revealCard">
+          <div class="reveal-medal medal-${cls} glow-${cls}">
+            ${crown}
+            <span class="pos-num">${pos}<span class="pos-deg">°</span></span>
+          </div>
+          <div class="reveal-table">${t.name} · ${ORD_WORD[pos]} CLASSIFICATO</div>
+          <div class="reveal-challenge">${t.challenge}</div>
+          <div class="reveal-members">${membersHtml}</div>
+        </div>`;
+
+      requestAnimationFrame(() => $('#revealCard').classList.add('play'));
+
+      // confetti
+      if (isFirst) firstPlaceConfetti();
+      else standardConfetti(pos);
+
+      // update podium
+      updatePodium(pos, t);
+
+      // release input shortly after entrance so user can't skip too fast
+      const releaseAfter = isFirst ? 900 : 650;
+      setTimeout(() => {
+        busy = false;
+        // fade the dark veil back after the drumroll reveal
+        if (isFirst) darkVeil.style.transition = 'opacity 1.2s ease', darkVeil.style.opacity = 0;
+        showPrompt();
+      }, releaseAfter);
+    }
+
+    function renderDrumroll(pos) {
+      hidePrompt();
+      busy = true;
+      stageInner.innerHTML = `
+        <div class="drumroll" id="drumBox">
+          <div class="dr-text">E il <span style="color:var(--oro)">PRIMO CLASSIFICATO</span> è…</div>
+          <div class="dr-dots"><span></span><span></span><span></span><span></span></div>
+        </div>`;
+
+      // Build tension: grow darkness, subtle confetti "sparks"
+      darkVeil.style.transition = 'opacity 3.2s ease';
+      requestAnimationFrame(() => { darkVeil.style.opacity = 0.85; });
+
+      // A few teaser bursts during the roll
+      let bursts = 0;
+      const teaser = setInterval(() => {
+        fire({
+          particleCount: 8,
+          startVelocity: 22,
+          spread: 60,
+          ticks: 60,
+          origin: { x: Math.random(), y: 1 },
+          colors: ['#FFD24A', '#FFA109', '#FFF68A'],
+          scalar: 0.7,
+        });
+        if (++bursts > 12) clearInterval(teaser);
+      }, 260);
+
+      // Auto-progress into the reveal after the tension window
+      setTimeout(() => {
+        clearInterval(teaser);
+        busy = false;
+        idx++; // move to reveal step
+        renderReveal(1);
+      }, 3400);
+    }
+
+    function renderDone() {
+      hidePrompt();
+      finale.classList.add('show');
+      grandFinaleConfetti();
+    }
+
+    // ---------- Podium ----------
+    function updatePodium(pos, t) {
+      $('#pod-name-' + pos).textContent = t.name;
+      const col = document.querySelector('.podium-col[data-pos="' + pos + '"]');
+      if (col) col.classList.add('show');
+    }
+
+    // ---------- Confetti ----------
+    // Safe wrapper: if the CDN library failed to load, never throw — the
+    // ceremony must keep working even without confetti.
+    function fire(opts) {
+      try {
+        if (typeof window.confetti === 'function') window.confetti(opts);
+      } catch (e) { /* no-op */ }
+    }
+
+    function standardConfetti(pos) {
+      const colors = pos === 2
+        ? ['#D6DCE6', '#A6B0C0', '#8a7bff', '#2BD988']
+        : ['#E08C42', '#B5651D', '#FFA109', '#6452D9'];
+      fire({ particleCount: 90, spread: 75, origin: { y: 0.6 }, colors, startVelocity: 42 });
+      setTimeout(() => fire({ particleCount: 50, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, colors }), 120);
+      setTimeout(() => fire({ particleCount: 50, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, colors }), 120);
+    }
+
+    function firstPlaceConfetti() {
+      const colors = ['#FFD24A', '#FFB800', '#FFF68A', '#6452D9', '#2BD988', '#FFA109', '#ffffff'];
+      // big central blast
+      fire({ particleCount: 220, spread: 100, origin: { y: 0.55 }, colors, startVelocity: 55, scalar: 1.1 });
+      // side cannons
+      const cannon = (x, angle) => fire({ particleCount: 120, angle, spread: 70, origin: { x, y: 0.65 }, colors, startVelocity: 55 });
+      setTimeout(() => cannon(0, 60), 80);
+      setTimeout(() => cannon(1, 120), 80);
+      // sustained rain
+      let end = Date.now() + 2600;
+      (function frame() {
+        fire({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors });
+        fire({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    function grandFinaleConfetti() {
+      const colors = ['#FFD24A', '#FFB800', '#FFF68A', '#6452D9', '#2BD988', '#FFA109', '#ffffff'];
+      let end = Date.now() + 1800;
+      (function frame() {
+        fire({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors, scalar: 0.9 });
+        fire({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors, scalar: 0.9 });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    // ---------- Prompt visibility ----------
+    function showPrompt() { promptAdvance.classList.remove('hidden'); }
+    function hidePrompt() { promptAdvance.classList.add('hidden'); }
+
+    // ---------- Reset ----------
+    function restart() {
+      winners = null;
+      idx = -1;
+      busy = false;
+      stageInner.innerHTML = '';
+      stage.classList.add('hidden');
+      podium.classList.add('hidden');
+      finale.classList.remove('show');
+      btnRestart.classList.add('hidden');
+      darkVeil.style.opacity = 0;
+      setup.classList.remove('hidden');
+      validateSelection();
+    }
+
+    // ---------- Fullscreen ----------
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        (document.documentElement.requestFullscreen || function(){}).call(document.documentElement);
+      } else {
+        (document.exitFullscreen || function(){}).call(document);
+      }
+    }
+
+    // ---------- Input handling ----------
+    function onAdvanceInput() {
+      // Only advance during the show, and only when it's an interactive (waiting) step
+      if (setup.classList.contains('hidden') === false) return; // still in setup
+      if (busy) return;
+      const step = steps[idx];
+      if (!step) return;
+      if (step.type === 'done') return;
+      advance();
+    }
+
+    // Space / click to advance
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      const inSetup = !setup.classList.contains('hidden');
+
+      if (key === ' ' || key === 'Spacebar' || e.code === 'Space') {
+        if (inSetup) return; // don't hijack space in setup
+        e.preventDefault();
+        onAdvanceInput();
+      } else if (key === 'Enter' && inSetup) {
+        // Enter starts the show from setup
+        const active = document.activeElement;
+        if (!active || active.tagName !== 'SELECT') { e.preventDefault(); startShow(); }
+      } else if (key === 'r' || key === 'R') {
+        if (!inSetup) { e.preventDefault(); restart(); }
+      } else if (key === 'f' || key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+
+    // Click anywhere on the stage to advance
+    stage.addEventListener('click', (e) => {
+      if (e.target.closest('.controls')) return;
+      onAdvanceInput();
+    });
+
+    btnStart.addEventListener('click', startShow);
+    btnRestart.addEventListener('click', restart);
+    btnFull.addEventListener('click', toggleFullscreen);
+
+    // Initial validation
+    validateSelection();
+  })();
+  </script>
+</body>
+</html>
