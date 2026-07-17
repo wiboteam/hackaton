@@ -450,6 +450,59 @@
     z-index: 15;
   }
 
+  /* ---------- Loser card (4°/5°, mood pollici in giù) ---------- */
+  .loser-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(8px, 1.6vh, 18px);
+    max-width: min(1000px, 92vw);
+    filter: saturate(0.55);
+  }
+  .loser-eyebrow {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-size: clamp(13px, 1.8vw, 20px);
+  }
+  .loser-medal {
+    font-size: clamp(72px, 15vh, 150px);
+    line-height: 1;
+    filter: grayscale(0.2) drop-shadow(0 6px 14px rgba(30,28,28,0.15));
+    transform: rotate(-6deg);
+  }
+  .loser-rank {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    font-size: clamp(15px, 2.2vw, 26px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dark-grey);
+  }
+  .loser-challenge {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    font-size: clamp(28px, 5vw, 62px);
+    line-height: 1.05;
+    color: var(--medium-grey);
+    text-wrap: balance;
+  }
+  .loser-card .member {
+    background: rgba(157,168,167,0.16);
+    border-color: var(--medium-grey);
+    color: var(--dark-grey);
+  }
+  .loser-card .member .dot { background: var(--medium-grey); box-shadow: none; }
+  .loser-quip {
+    margin-top: clamp(4px, 1vh, 10px);
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: clamp(16px, 2.2vw, 26px);
+    font-weight: 700;
+  }
+
   /* ---------- Prize card ---------- */
   .prize-card {
     display: flex;
@@ -1685,6 +1738,9 @@
 
     function buildSteps() {
       steps = [];
+      // Prima i "non vincitori" 5° e 4° — mood pollici in giù, niente suspense
+      steps.push({ type: 'loser', pos: 5 });
+      steps.push({ type: 'loser', pos: 4 });
       [3, 2, 1].forEach((pos) => {
         steps.push({ type: 'announce', pos: pos });
         steps.push({ type: 'suspense', pos: pos, phase: 'team' });
@@ -1698,6 +1754,11 @@
     function startShow() {
       const w = validateSelection();
       if (!w) return;
+      // I due tavoli non messi sul podio diventano 4° e 5° (per id crescente)
+      const chosen = new Set([w[1].id, w[2].id, w[3].id]);
+      const rest = TABLES.filter((t) => !chosen.has(t.id));
+      w[4] = rest[0];
+      w[5] = rest[1];
       winners = w;
       buildSteps();
       idx = -1;
@@ -1717,7 +1778,8 @@
       idx++;
       if (idx >= steps.length) return;
       const step = steps[idx];
-      if (step.type === 'announce') renderAnnounce(step.pos);
+      if (step.type === 'loser') renderLoser(step.pos);
+      else if (step.type === 'announce') renderAnnounce(step.pos);
       else if (step.type === 'suspense') renderSuspense(step.pos, step.phase);
       else if (step.type === 'reveal') renderReveal(step.pos);
       else if (step.type === 'prize') renderPrize(step.pos);
@@ -1729,6 +1791,32 @@
       if (pos === 1) return 'radial-gradient(circle at 35% 30%, #fff2b0, #FFD24A 45%, #F0B400 90%)';
       if (pos === 2) return 'radial-gradient(circle at 35% 30%, #ffffff, #E4E8EC 45%, #9DA8A7 92%)';
       return 'radial-gradient(circle at 35% 30%, #ffd9a8, #E0863C 45%, #A85D22 90%)';
+    }
+
+    const LOSER_QUIPS = {
+      5: 'Ultimi. Ma proprio ultimi. Bohh 🤷',
+      4: 'Quarto posto: il primo dei non premiati. Vabbè 👎',
+    };
+
+    function renderLoser(pos) {
+      hidePrompt();
+      busy = true;
+      const t = winners[pos];
+      const membersHtml = t.members
+        .map((m) => '<div class="member"><span class="dot"></span>' + m + '</div>')
+        .join('');
+      stageInner.innerHTML =
+        '<div class="loser-card anim-in" id="loserCard">' +
+          '<div class="loser-eyebrow">Fuori dal podio 👎</div>' +
+          '<div class="loser-medal">👎</div>' +
+          '<div class="loser-rank">' + t.name + ' · ' + pos + '° CLASSIFICATO</div>' +
+          '<div class="loser-challenge">' + t.challenge + '</div>' +
+          '<div class="loser-members">' + membersHtml + '</div>' +
+          '<div class="loser-quip">' + LOSER_QUIPS[pos] + '</div>' +
+        '</div>';
+      requestAnimationFrame(() => $('#loserCard').classList.add('play'));
+      sadConfetti();
+      setTimeout(() => { busy = false; showPrompt(); }, 550);
     }
 
     function renderAnnounce(pos) {
@@ -1866,6 +1954,12 @@
     function fire(opts) {
       try { if (typeof window.confetti === 'function') window.confetti(opts); }
       catch (e) { /* no-op */ }
+    }
+
+    // Coriandoli "tristi" per 4°/5°: pochi, grigi, che cadono fiacchi 🤷
+    function sadConfetti() {
+      fire({ particleCount: 14, startVelocity: 12, spread: 45, gravity: 1.5, ticks: 110,
+             origin: { y: 0.35 }, colors: ['#9DA8A7', '#C7D1D0', '#525959'], scalar: 0.8 });
     }
 
     function standardConfetti(pos) {
