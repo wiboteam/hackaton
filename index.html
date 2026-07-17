@@ -397,13 +397,20 @@
     letter-spacing: 0.01em;
     line-height: 1.06;
     text-wrap: balance;
-    animation: drShake 0.35s ease-in-out infinite;
+    color: var(--text);
   }
+  .dr-text.accent-text, .accent-text { color: var(--brand); }
+  .dr-text.dr-strong { animation: drShake 0.35s ease-in-out infinite; }
+  .dr-text.dr-soft   { animation: drSoft 1.4s ease-in-out infinite; }
   @keyframes drShake {
     0%,100% { transform: translate(0,0); }
     25% { transform: translate(-2px, 1px); }
     50% { transform: translate(2px, -1px); }
     75% { transform: translate(-1px, -1px); }
+  }
+  @keyframes drSoft {
+    0%,100% { transform: scale(0.99); opacity: 0.86; }
+    50% { transform: scale(1.012); opacity: 1; }
   }
   .dr-dots { display: flex; gap: 18px; }
   .dr-dots span {
@@ -414,6 +421,9 @@
     box-shadow: 0 0 24px var(--gold);
     animation: drPulse 0.9s ease-in-out infinite;
   }
+  .dr-dots.gold span   { background: var(--gold);     box-shadow: 0 0 24px var(--gold); }
+  .dr-dots.silver span { background: var(--silver-2); box-shadow: 0 0 20px rgba(157,168,167,0.7); }
+  .dr-dots.bronze span { background: var(--bronze);   box-shadow: 0 0 20px rgba(224,134,60,0.7); }
   .dr-dots span:nth-child(2){ animation-delay: 0.15s; }
   .dr-dots span:nth-child(3){ animation-delay: 0.3s; }
   .dr-dots span:nth-child(4){ animation-delay: 0.45s; }
@@ -428,6 +438,56 @@
     opacity: 0;
     pointer-events: none;
     z-index: 15;
+  }
+
+  /* ---------- Prize card ---------- */
+  .prize-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(8px, 1.8vh, 18px);
+    max-width: min(1000px, 92vw);
+  }
+  .prize-eyebrow {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--brand);
+    font-size: clamp(14px, 2vw, 24px);
+  }
+  .prize-icon {
+    font-size: clamp(64px, 13vh, 148px);
+    line-height: 1;
+    filter: drop-shadow(0 8px 20px rgba(30,28,28,0.18));
+  }
+  .prize-label {
+    color: var(--text-muted);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: clamp(12px, 1.6vw, 18px);
+  }
+  .prize-title {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 500;
+    color: var(--text);
+    font-size: clamp(30px, 5.5vw, 72px);
+    line-height: 1.06;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+  .prize-card.first .prize-title {
+    font-size: clamp(34px, 6vw, 84px);
+    background: linear-gradient(100deg, var(--gold-2), var(--gold) 48%, var(--orange));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .prize-detail {
+    color: var(--text-dim);
+    font-size: clamp(16px, 2.2vw, 28px);
+    font-weight: 400;
+    text-wrap: balance;
+    max-width: 24ch;
   }
 
   /* Podium (side summary) */
@@ -1541,6 +1601,33 @@
     const ORD_WORD = { 1: 'PRIMO', 2: 'SECONDO', 3: 'TERZO' };
     const MEDAL_CLASS = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
+    const PRIZES = {
+      3: { icon: '🍽️', title: 'Pranzo offerto da Snodo', detail: '' },
+      2: { icon: '⛱️', title: 'Mezza giornata libera', detail: 'Offerta dall’azienda' },
+      1: { icon: '🎁', title: 'Mezza giornata libera + 30€ di buono a testa',
+           detail: 'Su un servizio a scelta: Amazon, Ryanair, Airbnb…' },
+    };
+
+    // Suspense graduata: 3° lieve, 2° media, 1° massima (per team e per premio)
+    const SUSPENSE = {
+      team: {
+        3: { dur: 1500, veil: 0.30, teaser: false, shake: false,
+             text: 'Il <span class="accent-text">TERZO CLASSIFICATO</span> è…' },
+        2: { dur: 2000, veil: 0.45, teaser: false, shake: false,
+             text: 'Il <span class="accent-text">SECONDO CLASSIFICATO</span> è…' },
+        1: { dur: 3400, veil: 0.85, teaser: true, shake: true,
+             text: 'E il <span class="gold-text">PRIMO CLASSIFICATO</span> è…' },
+      },
+      prize: {
+        3: { dur: 1200, veil: 0.22, teaser: false, shake: false,
+             text: 'E il <span class="accent-text">premio</span> è…' },
+        2: { dur: 1400, veil: 0.30, teaser: false, shake: false,
+             text: 'E il <span class="accent-text">premio</span> è…' },
+        1: { dur: 2000, veil: 0.55, teaser: true, shake: true,
+             text: 'E il <span class="gold-text">gran premio</span> è…' },
+      },
+    };
+
     const $ = (s) => document.querySelector(s);
     const setup = $('#setup');
     const stage = $('#stage');
@@ -1587,15 +1674,15 @@
     let busy = false;
 
     function buildSteps() {
-      steps = [
-        { type: 'announce', pos: 3 },
-        { type: 'reveal', pos: 3 },
-        { type: 'announce', pos: 2 },
-        { type: 'reveal', pos: 2 },
-        { type: 'drumroll', pos: 1 },
-        { type: 'reveal', pos: 1 },
-        { type: 'done' },
-      ];
+      steps = [];
+      [3, 2, 1].forEach((pos) => {
+        steps.push({ type: 'announce', pos: pos });
+        steps.push({ type: 'suspense', pos: pos, phase: 'team' });
+        steps.push({ type: 'reveal', pos: pos });
+        steps.push({ type: 'suspense', pos: pos, phase: 'prize' });
+        steps.push({ type: 'prize', pos: pos });
+      });
+      steps.push({ type: 'done' });
     }
 
     function startShow() {
@@ -1621,8 +1708,9 @@
       if (idx >= steps.length) return;
       const step = steps[idx];
       if (step.type === 'announce') renderAnnounce(step.pos);
+      else if (step.type === 'suspense') renderSuspense(step.pos, step.phase);
       else if (step.type === 'reveal') renderReveal(step.pos);
-      else if (step.type === 'drumroll') renderDrumroll(step.pos);
+      else if (step.type === 'prize') renderPrize(step.pos);
       else if (step.type === 'done') renderDone();
     }
 
@@ -1675,46 +1763,78 @@
 
       updatePodium(pos, t);
 
+      // Svanisce la vignette viola della suspense (per tutte le posizioni)
+      darkVeil.style.transition = 'opacity 1.1s ease';
+      darkVeil.style.opacity = 0;
+
       const releaseAfter = isFirst ? 900 : 650;
       setTimeout(() => {
         busy = false;
-        if (isFirst) { darkVeil.style.transition = 'opacity 1.2s ease'; darkVeil.style.opacity = 0; }
         showPrompt();
       }, releaseAfter);
     }
 
-    function renderDrumroll() {
+    function renderSuspense(pos, phase) {
       hidePrompt();
       busy = true;
+      const cfg = SUSPENSE[phase][pos];
+      const cls = MEDAL_CLASS[pos];
       stageInner.innerHTML =
         '<div class="drumroll" id="drumBox">' +
-          '<div class="dr-text">E il <span class="gold-text">PRIMO CLASSIFICATO</span> è…</div>' +
-          '<div class="dr-dots"><span></span><span></span><span></span><span></span></div>' +
+          '<div class="dr-text ' + (cfg.shake ? 'dr-strong' : 'dr-soft') + '">' + cfg.text + '</div>' +
+          '<div class="dr-dots ' + cls + '"><span></span><span></span><span></span><span></span></div>' +
         '</div>';
 
-      darkVeil.style.transition = 'opacity 3.2s ease';
-      requestAnimationFrame(() => { darkVeil.style.opacity = 0.85; });
+      darkVeil.style.transition = 'opacity ' + (cfg.dur / 1000) + 's ease';
+      requestAnimationFrame(() => { darkVeil.style.opacity = cfg.veil; });
 
-      let bursts = 0;
-      const teaser = setInterval(() => {
-        fire({
-          particleCount: 8,
-          startVelocity: 22,
-          spread: 60,
-          ticks: 60,
-          origin: { x: Math.random(), y: 1 },
-          colors: ['#FFD24A', '#FFA109', '#6452D9'],
-          scalar: 0.7,
-        });
-        if (++bursts > 12) clearInterval(teaser);
-      }, 260);
+      let teaser = null;
+      if (cfg.teaser) {
+        let bursts = 0;
+        teaser = setInterval(() => {
+          fire({
+            particleCount: 8, startVelocity: 22, spread: 60, ticks: 60,
+            origin: { x: Math.random(), y: 1 },
+            colors: ['#FFD24A', '#FFA109', '#6452D9'], scalar: 0.7,
+          });
+          if (++bursts > 12) clearInterval(teaser);
+        }, 260);
+      }
 
       setTimeout(() => {
-        clearInterval(teaser);
+        if (teaser) clearInterval(teaser);
         busy = false;
-        idx++;
-        renderReveal(1);
-      }, 3400);
+        advance();
+      }, cfg.dur);
+    }
+
+    function renderPrize(pos) {
+      hidePrompt();
+      busy = true;
+      const t = winners[pos];
+      const p = PRIZES[pos];
+      const isFirst = pos === 1;
+
+      darkVeil.style.transition = 'opacity 1s ease';
+      darkVeil.style.opacity = 0;
+
+      const detailHtml = p.detail ? '<div class="prize-detail">' + p.detail + '</div>' : '';
+      stageInner.innerHTML =
+        '<div class="prize-card ' + (isFirst ? 'first' : '') + ' anim-in" id="prizeCard">' +
+          '<div class="prize-eyebrow">' + t.name + ' · ' + ORD[pos] + ' classificato</div>' +
+          '<div class="prize-icon">' + p.icon + '</div>' +
+          '<div class="prize-label">Il premio</div>' +
+          '<div class="prize-title ' + (isFirst ? 'gold-text' : '') + '">' + p.title + '</div>' +
+          detailHtml +
+        '</div>';
+
+      requestAnimationFrame(() => $('#prizeCard').classList.add('play'));
+
+      if (isFirst) firstPlaceConfetti();
+      else standardConfetti(pos);
+
+      const releaseAfter = isFirst ? 850 : 600;
+      setTimeout(() => { busy = false; showPrompt(); }, releaseAfter);
     }
 
     function renderDone() {
