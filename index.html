@@ -28,10 +28,13 @@
     --super-light:   #F2F2F2;
     --white:         #FFFFFF;
 
-    /* --- Derivati per la cerimonia (fondo scuro/viola profondo) --- */
-    --bg-0: #14121c;
-    --bg-1: #1c1733;
-    --bg-2: #241c4d;
+    /* --- Token semantici (tema chiaro, tutti derivati dal brandbook) --- */
+    --page:       #F2F2F2;  /* Super Light grey: sfondo */
+    --surface:    #FFFFFF;  /* White: pannelli/card */
+    --brand:      #6452D9;  /* Wibo Violet: colore guida */
+    --brand-soft: #A197E7;  /* Medium Violet: bordi/accenti */
+    --brand-wash: #DAD7F0;  /* Light Violet: riempimenti tenui */
+    --hairline:   #C7D1D0;  /* Grey: bordi neutri */
 
     /* --- Medaglie (oro/argento/bronzo; argento e bronzo agganciati al brand) --- */
     --gold:     #FFD24A;
@@ -41,8 +44,9 @@
     --bronze:   #E0863C;
     --bronze-2: #A85D22;
 
-    --text:     #F3F1FF;
-    --text-dim: #C7C2E6;
+    --text:     #1E1C1C;   /* Black: testo/titoli primari */
+    --text-dim: #525959;   /* Dark grey: testo secondario */
+    --text-muted: #9DA8A7; /* Medium grey: etichette attenuate */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,7 +55,7 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
-    background: var(--bg-0);
+    background: var(--page);
     color: var(--text);
     font-family: 'Lato', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -59,10 +63,10 @@
 
   body {
     background:
-      radial-gradient(1200px 720px at 50% -12%, rgba(100,82,217,0.55), transparent 60%),
-      radial-gradient(900px 600px at 8% 112%, rgba(43,217,136,0.10), transparent 60%),
-      radial-gradient(900px 600px at 92% 112%, rgba(255,161,9,0.10), transparent 60%),
-      linear-gradient(160deg, var(--bg-1), var(--bg-0) 72%);
+      radial-gradient(1100px 680px at 50% -14%, rgba(161,151,231,0.38), transparent 62%),
+      radial-gradient(820px 560px at 10% 114%, rgba(100,82,217,0.10), transparent 60%),
+      radial-gradient(820px 560px at 90% 114%, rgba(255,161,9,0.07), transparent 60%),
+      linear-gradient(180deg, var(--surface), var(--page) 60%);
     background-attachment: fixed;
   }
 
@@ -98,28 +102,24 @@
     z-index: 30;
     white-space: nowrap;
   }
-  .eyebrow b { color: var(--mint); font-weight: 900; }
+  .eyebrow b { color: var(--brand); font-weight: 900; }
 
   .wordmark {
     font-family: 'Roboto Slab', serif;
     font-weight: 500;
     letter-spacing: -0.02em;
-    background: linear-gradient(120deg, var(--white), var(--lemon) 42%, var(--mint));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--brand);
     line-height: 0.9;
   }
 
   /* ---------- Setup screen ---------- */
   #setup .panel {
     width: min(680px, 92vw);
-    background: linear-gradient(180deg, rgba(36,28,77,0.74), rgba(20,18,28,0.85));
-    border: 1px solid rgba(161,151,231,0.38);
+    background: var(--surface);
+    border: 1px solid var(--brand-wash);
     border-radius: 26px;
     padding: clamp(26px, 4vh, 48px);
-    box-shadow: 0 30px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
-    backdrop-filter: blur(6px);
+    box-shadow: 0 24px 70px rgba(100,82,217,0.16), 0 4px 14px rgba(30,28,28,0.06);
   }
   #setup .logo-big { font-size: clamp(58px, 11vw, 128px); margin-bottom: 6px; }
   #setup .subtitle {
@@ -163,22 +163,23 @@
     font-family: 'Lato', sans-serif;
     font-weight: 700;
     color: var(--text);
-    background: rgba(20,18,28,0.9);
-    border: 1.5px solid rgba(161,151,231,0.42);
+    background: var(--surface);
+    border: 1.5px solid var(--brand-soft);
     border-radius: 14px;
     appearance: none;
     cursor: pointer;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23A197E7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%236452D9' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
     background-repeat: no-repeat;
     background-position: right 16px center;
     transition: border-color .2s, box-shadow .2s;
   }
+  select:hover { border-color: var(--brand); }
   select:focus {
     outline: none;
-    border-color: var(--medium-violet);
-    box-shadow: 0 0 0 4px rgba(161,151,231,0.28);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(100,82,217,0.20);
   }
-  select option { background: var(--bg-1); color: var(--text); }
+  select option { background: var(--surface); color: var(--text); }
 
   .warn {
     color: var(--orange);
@@ -206,10 +207,10 @@
     width: 100%;
     padding: 18px;
     font-size: clamp(17px, 2.2vw, 22px);
-    background: linear-gradient(120deg, var(--wibo-violet), var(--mint) 135%);
-    box-shadow: 0 16px 40px rgba(100,82,217,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+    background: var(--brand);
+    box-shadow: 0 14px 32px rgba(100,82,217,0.32), inset 0 1px 0 rgba(255,255,255,0.22);
   }
-  .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 20px 52px rgba(100,82,217,0.7); }
+  .btn-primary:hover { filter: brightness(1.07); box-shadow: 0 18px 44px rgba(100,82,217,0.42); }
 
   .setup-hint {
     margin-top: 18px;
@@ -218,12 +219,13 @@
     letter-spacing: 0.03em;
   }
   .setup-hint kbd {
-    background: rgba(161,151,231,0.24);
-    border: 1px solid rgba(161,151,231,0.42);
+    background: var(--brand-wash);
+    border: 1px solid var(--brand-soft);
     border-radius: 6px;
     padding: 2px 8px;
     font-family: 'Lato', monospace;
     font-size: 12px;
+    color: var(--brand);
   }
 
   /* ---------- Stage (show) ---------- */
@@ -261,7 +263,7 @@
     line-height: 1.02;
   }
   .announce .rank-sub {
-    color: var(--text-dim);
+    color: var(--text-muted);
     letter-spacing: 0.3em;
     text-transform: uppercase;
     font-size: clamp(12px, 1.8vw, 18px);
@@ -282,11 +284,11 @@
     z-index: 25;
   }
   .prompt-advance kbd {
-    background: rgba(161,151,231,0.28);
-    border: 1px solid rgba(161,151,231,0.5);
+    background: var(--brand-wash);
+    border: 1px solid var(--brand-soft);
     border-radius: 7px;
     padding: 3px 10px;
-    color: var(--white);
+    color: var(--brand);
     font-family: inherit;
   }
   @keyframes pulseHint { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
@@ -308,7 +310,7 @@
     font-weight: 500;
     color: var(--black);
     position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 3px 10px rgba(255,255,255,0.4), inset 0 -6px 14px rgba(0,0,0,0.25);
+    box-shadow: 0 16px 40px rgba(30,28,28,0.20), inset 0 3px 10px rgba(255,255,255,0.55), inset 0 -6px 14px rgba(0,0,0,0.18);
   }
   .reveal-medal .pos-num { font-size: clamp(56px, 11vh, 120px); line-height: 1; }
   .reveal-medal .pos-deg { font-size: 0.5em; vertical-align: super; }
@@ -323,7 +325,7 @@
     font-size: clamp(15px, 2.2vw, 26px);
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--mint);
+    color: var(--brand);
   }
   .reveal-challenge {
     font-family: 'Roboto Slab', serif;
@@ -331,8 +333,7 @@
     font-size: clamp(34px, 6.5vw, 84px);
     line-height: 1.05;
     letter-spacing: -0.005em;
-    background: linear-gradient(100deg, var(--white), var(--lemon));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+    color: var(--text);
     text-wrap: balance;
   }
   .reveal-members {
@@ -343,14 +344,14 @@
     margin-top: clamp(6px, 1.5vh, 16px);
   }
   .member {
-    background: rgba(161,151,231,0.16);
-    border: 1px solid rgba(161,151,231,0.4);
+    background: var(--brand-wash);
+    border: 1px solid var(--brand-soft);
     border-radius: 999px;
     padding: clamp(9px, 1.4vh, 15px) clamp(16px, 2.2vw, 30px);
     font-size: clamp(15px, 2vw, 25px);
     font-weight: 700;
     letter-spacing: 0.01em;
-    backdrop-filter: blur(3px);
+    color: var(--text);
   }
   .member .dot {
     display:inline-block; width:9px; height:9px; border-radius:50%;
@@ -359,6 +360,12 @@
     box-shadow: 0 0 10px var(--orange);
   }
 
+  /* Momento clou 1° posto: unico titolo con gradiente oro */
+  .gold-text,
+  .reveal-card.first .reveal-challenge {
+    background: linear-gradient(100deg, var(--gold-2), var(--gold) 48%, var(--orange));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .reveal-card.first .reveal-challenge { font-size: clamp(40px, 7.5vw, 104px); }
   .reveal-card.first .reveal-medal {
     width: clamp(130px, 20vh, 230px);
@@ -414,9 +421,10 @@
     0%,100% { transform: scale(0.6); opacity: 0.4; }
     50% { transform: scale(1.25); opacity: 1; }
   }
+  /* Rullo di tamburi: vignette VIOLA che cresce (non nera), on-brand su fondo chiaro */
   #darkVeil {
     position: fixed; inset: 0;
-    background: radial-gradient(circle at 50% 50%, transparent, #000 75%);
+    background: radial-gradient(circle at 50% 45%, transparent 28%, rgba(100,82,217,0.58) 100%);
     opacity: 0;
     pointer-events: none;
     z-index: 15;
@@ -452,7 +460,7 @@
     font-size: clamp(14px, 1.6vw, 20px);
     color: var(--black);
     margin-bottom: 6px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    box-shadow: 0 5px 14px rgba(30,28,28,0.20);
   }
   .podium-name {
     font-family: 'Roboto Slab', serif;
@@ -467,9 +475,10 @@
   .podium-bar {
     width: 100%;
     border-radius: 10px 10px 0 0;
-    background: linear-gradient(180deg, rgba(161,151,231,0.5), rgba(100,82,217,0.25));
-    border: 1px solid rgba(161,151,231,0.42);
+    background: linear-gradient(180deg, var(--brand-soft), rgba(100,82,217,0.3));
+    border: 1px solid var(--brand-soft);
     border-bottom: none;
+    box-shadow: 0 6px 16px rgba(30,28,28,0.10);
   }
   .podium-col[data-pos="1"] .podium-bar { height: clamp(70px, 12vh, 130px); background: linear-gradient(180deg, var(--gold), rgba(240,180,0,0.35)); }
   .podium-col[data-pos="2"] .podium-bar { height: clamp(50px, 9vh, 96px);  background: linear-gradient(180deg, var(--silver), rgba(157,168,167,0.35)); }
@@ -493,9 +502,9 @@
     font-family: 'Roboto Slab', serif;
     font-weight: 500;
     font-size: clamp(22px, 3.6vw, 46px);
-    color: var(--lemon);
+    color: var(--brand);
     letter-spacing: 0.06em;
-    text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    text-shadow: 0 2px 10px rgba(100,82,217,0.18);
     opacity: 0;
     animation: finIn 1s ease forwards;
   }
@@ -511,15 +520,16 @@
     z-index: 40;
   }
   .btn-ghost {
-    background: rgba(161,151,231,0.15);
-    border: 1px solid rgba(161,151,231,0.38);
+    background: var(--surface);
+    border: 1px solid var(--brand-soft);
     color: var(--text-dim);
     padding: 9px 15px;
     font-size: 12px;
     border-radius: 11px;
     letter-spacing: 0.08em;
+    box-shadow: 0 2px 8px rgba(30,28,28,0.06);
   }
-  .btn-ghost:hover { color: var(--white); background: rgba(161,151,231,0.3); }
+  .btn-ghost:hover { color: var(--surface); background: var(--brand); border-color: var(--brand); }
 
   /* ---------- Entrance animations ---------- */
   .anim-in > * { opacity: 0; }
@@ -1678,7 +1688,7 @@
       busy = true;
       stageInner.innerHTML =
         '<div class="drumroll" id="drumBox">' +
-          '<div class="dr-text">E il <span style="color:var(--gold)">PRIMO CLASSIFICATO</span> è…</div>' +
+          '<div class="dr-text">E il <span class="gold-text">PRIMO CLASSIFICATO</span> è…</div>' +
           '<div class="dr-dots"><span></span><span></span><span></span><span></span></div>' +
         '</div>';
 
@@ -1693,7 +1703,7 @@
           spread: 60,
           ticks: 60,
           origin: { x: Math.random(), y: 1 },
-          colors: ['#FFD24A', '#FFA109', '#FFF68A'],
+          colors: ['#FFD24A', '#FFA109', '#6452D9'],
           scalar: 0.7,
         });
         if (++bursts > 12) clearInterval(teaser);
@@ -1727,15 +1737,15 @@
 
     function standardConfetti(pos) {
       const colors = pos === 2
-        ? ['#E4E8EC', '#9DA8A7', '#A197E7', '#2BD988']
-        : ['#E0863C', '#A85D22', '#FFA109', '#6452D9'];
+        ? ['#9DA8A7', '#6452D9', '#A197E7', '#2BD988']
+        : ['#E0863C', '#FFA109', '#6452D9', '#2BD988'];
       fire({ particleCount: 90, spread: 75, origin: { y: 0.6 }, colors, startVelocity: 42 });
       setTimeout(() => fire({ particleCount: 50, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, colors }), 120);
       setTimeout(() => fire({ particleCount: 50, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, colors }), 120);
     }
 
     function firstPlaceConfetti() {
-      const colors = ['#FFD24A', '#F0B400', '#FFF68A', '#6452D9', '#2BD988', '#FFA109', '#FFFFFF'];
+      const colors = ['#FFD24A', '#F0B400', '#FFA109', '#6452D9', '#2BD988', '#A197E7'];
       fire({ particleCount: 220, spread: 100, origin: { y: 0.55 }, colors, startVelocity: 55, scalar: 1.1 });
       const cannon = (x, angle) => fire({ particleCount: 120, angle, spread: 70, origin: { x, y: 0.65 }, colors, startVelocity: 55 });
       setTimeout(() => cannon(0, 60), 80);
@@ -1749,7 +1759,7 @@
     }
 
     function grandFinaleConfetti() {
-      const colors = ['#FFD24A', '#F0B400', '#FFF68A', '#6452D9', '#2BD988', '#FFA109', '#FFFFFF'];
+      const colors = ['#FFD24A', '#F0B400', '#FFA109', '#6452D9', '#2BD988', '#A197E7'];
       let end = Date.now() + 1800;
       (function frame() {
         fire({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors, scalar: 0.9 });
